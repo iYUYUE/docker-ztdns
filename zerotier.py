@@ -59,7 +59,7 @@ class ZeroTierInventory(object):
 
         if self.args.refresh:
             hosts_file = self.get_hosts_file()
-            if hosts_file and not set(self.inventory) & set(hosts_file):
+            if hosts_file and not set(self.inventory) ^ set(hosts_file):
                 sys.exit("hosts are up-to-date")
             else:
                 self.dump_hosts_file()
@@ -86,7 +86,9 @@ class ZeroTierInventory(object):
     def add_host(self, host):
         """Adds a host to the inventory"""
         host_vars = []
-        names = [host['name']]
+        names = []
+        if host['name'] not in self.local_hosts:
+            names += [host['name']]
         for n in host['description'].split(';'):
             if n:
                 if ':' in n:
