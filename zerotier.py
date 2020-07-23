@@ -80,7 +80,7 @@ class ZeroTierInventory(object):
         ret = []
         local_hosts = open('/etc/hosts','r')
         for line in local_hosts:
-            ret.append(line.split()[1:])
+            ret += line.split()[1:]
         return ret
 
     def add_host(self, host):
