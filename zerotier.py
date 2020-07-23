@@ -45,6 +45,7 @@ class ZeroTierInventory(object):
     def __init__(self):
         """ Main execution path """
         self.inventory = []
+        self.local_hosts = self.get_local_hosts()
 
         # Read settings and parse CLI arguments
         self.read_settings()
@@ -75,6 +76,13 @@ class ZeroTierInventory(object):
         except FileNotFoundError:
             return None
 
+    def get_local_hosts(self):
+        ret = []
+        local_hosts = open('/etc/hosts','r')
+        for line in local_hosts:
+            ret.append(line.split()[1:])
+        return ret
+
     def add_host(self, host):
         """Adds a host to the inventory"""
         host_vars = []
@@ -83,9 +91,11 @@ class ZeroTierInventory(object):
             if n:
                 if ':' in n:
                     nn = n.split(':')
-                    self.inventory.append(self._get_host_info([nn[0]], nn[1]))
+                    if nn[0] not in self.local_hosts:
+                        self.inventory.append(self._get_host_info([nn[0]], nn[1]))
                 else:
-                    names.append(n)
+                    if n not in self.local_hosts:
+                        names.append(n)
         if len(host['config']['ipAssignments']) == 1:
             self.inventory.append(self._get_host_info(names, host['config']['ipAssignments'][0]))
 
@@ -102,7 +112,6 @@ class ZeroTierInventory(object):
 
     def get_hosts(self):
         """Make API call and add hosts to inventory"""
-
         r = requests.get(
             self.controller + '/api/network/' + self.network + '/member',
             headers={'Authorization': 'bearer ' + self.token})
