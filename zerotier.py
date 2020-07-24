@@ -45,11 +45,14 @@ class ZeroTierInventory(object):
     def __init__(self):
         """ Main execution path """
         self.inventory = []
-        self.local_hosts = self.get_local_hosts()
+        self.local_hosts = []
 
         # Read settings and parse CLI arguments
         self.read_settings()
         self.parse_cli_args()
+
+        if self.args.hosts:
+            self.local_hosts = self.get_local_hosts()
 
         # Get host information and populate inventory
         self.get_hosts()
@@ -135,7 +138,12 @@ class ZeroTierInventory(object):
             '--refresh',
             action='store_true',
             default=False,
-            help='Refresh hosts file (default: True)')
+            help='Refresh hosts file (default: False)')
+        parser.add_argument(
+            '--hosts',
+            action='store_true',
+            default=False,
+            help='Respect local hosts file (default: False)')
         self.args = parser.parse_args()
 
     def push(self, my_dict, key, element):
